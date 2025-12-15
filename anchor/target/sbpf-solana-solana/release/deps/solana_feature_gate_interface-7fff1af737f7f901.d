@@ -1,0 +1,7 @@
+/work/anchor/target/sbpf-solana-solana/release/deps/libsolana_feature_gate_interface-7fff1af737f7f901.rmeta: /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-feature-gate-interface-2.2.1/src/lib.rs
+
+/work/anchor/target/sbpf-solana-solana/release/deps/libsolana_feature_gate_interface-7fff1af737f7f901.rlib: /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-feature-gate-interface-2.2.1/src/lib.rs
+
+/work/anchor/target/sbpf-solana-solana/release/deps/solana_feature_gate_interface-7fff1af737f7f901.d: /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-feature-gate-interface-2.2.1/src/lib.rs
+
+/root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/solana-feature-gate-interface-2.2.1/src/lib.rs:

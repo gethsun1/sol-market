@@ -1,0 +1,22 @@
+[package]
+name = "auction"
+version = "0.1.0"
+description = "English auction program for SolMarket"
+edition = "2021"
+
+[features]
+anchor-debug = []
+idl-build = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+test-sbf = []
+
+[dependencies]
+anchor-lang = "0.30.1"
+
+
+
+
+
+

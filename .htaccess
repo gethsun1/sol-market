@@ -1,0 +1,51 @@
+# Apache configuration for Next.js on cPanel
+# This file helps with routing and static asset serving
+
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Handle Next.js static files
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# If the file exists, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# For API routes and Next.js routing, proxy to Node.js server
+# Note: This assumes Node.js app is running on a different port
+# Adjust the port number based on your cPanel Node.js app configuration
+# RewriteRule ^(.*)$ http://localhost:PORT/$1 [P,L]
+
+# If using static export, uncomment the following:
+# RewriteRule ^(.*)$ /index.html [L]
+
+# Security: Prevent access to sensitive files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent access to .env files
+<FilesMatch "^\.env">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Enable compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Set cache headers for static assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
