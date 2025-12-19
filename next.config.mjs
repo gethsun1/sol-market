@@ -12,7 +12,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Skip static generation for API routes during build
+  // Enable serverless functions for Vercel
   experimental: {
     missingSuspenseWithCSRBailout: false,
   },

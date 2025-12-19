@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Sun, Moon } from "lucide-react"
+import { Sun, Moon, Sparkles } from "lucide-react"
 import { CreateListingModal } from "@/components/create-listing-modal"
 import { useState } from "react"
 import { useSession, signIn, signOut } from "next-auth/react"
@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useSolanaWallet } from "@/components/solana/use-wallet"
 import { useWalletModal } from "@/components/solana/custom-wallet-modal-provider"
 
@@ -24,64 +24,91 @@ export default function Navbar() {
   const { data: session, status } = useSession()
   const { theme, setTheme } = useTheme()
   const router = useRouter()
+  const pathname = usePathname()
   const sol = useSolanaWallet()
   const { setVisible } = useWalletModal()
 
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/marketplace", label: "Marketplace" },
+    { href: "/web3-news", label: "Web3 News" },
+    { href: "/raffles", label: "Raffles" },
+    { href: "/auctions", label: "Auctions" },
+    { href: "/transactions", label: "Transactions" },
+  ]
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-          <div className="flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br from-purple-500 to-cyan-500">
-            <span className="text-white">◈</span>
+        {/* Logo with glow effect */}
+        <Link href="/" className="flex items-center gap-3 text-xl font-bold group">
+          <div className="relative">
+            <img
+              src="/makena-logo.jpeg"
+              alt="Makena E-commerce"
+              className="h-12 w-auto rounded-lg object-contain transition-transform group-hover:scale-110 group-hover:rotate-3"
+            />
+            <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-500 to-cyan-500 opacity-0 group-hover:opacity-50 blur-xl transition-opacity" />
           </div>
-          <span className="gradient-text">SolMarket</span>
+          <span className="gradient-text-vibrant hidden sm:inline-block">Makena E-commerce</span>
         </Link>
 
         {/* Navigation Links */}
-        <div className="hidden items-center gap-8 md:flex">
-          <Link href="/" className="text-foreground/70 hover:text-foreground transition-colors">
-            Home
-          </Link>
-          <Link href="/marketplace" className="text-foreground/70 hover:text-foreground transition-colors">
-            Marketplace
-          </Link>
-          <Link href="/web3-news" className="text-foreground/70 hover:text-foreground transition-colors">
-            Web3 News
-          </Link>
-          <Link href="/raffles" className="text-foreground/70 hover:text-foreground transition-colors">
-            Raffles
-          </Link>
-          <Link href="/auctions" className="text-foreground/70 hover:text-foreground transition-colors">
-            Auctions
-          </Link>
-          <Link href="/transactions" className="text-foreground/70 hover:text-foreground transition-colors">
-            Transactions
-          </Link>
+        <div className="hidden items-center gap-1 md:flex">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${isActive
+                    ? "text-foreground"
+                    : "text-foreground/70 hover:text-foreground hover:bg-white/5"
+                  }`}
+              >
+                {link.label}
+                {isActive && (
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full animate-pulse-glow" />
+                )}
+              </Link>
+            )
+          })}
         </div>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <CreateListingModal />
+
+          {/* Theme toggle with animation */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="relative flex items-center justify-center p-2 hover:bg-accent rounded-lg transition-colors"
+            className="relative flex items-center justify-center p-2.5 hover:bg-accent rounded-lg transition-all glass hover:scale-110"
           >
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-yellow-500" />
+            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-purple-400" />
             <span className="sr-only">Toggle theme</span>
           </button>
+
+          {/* Connect button with enhanced styling */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0">
-                {sol.connected && sol.label
-                  ? sol.label
-                  : status === "authenticated"
-                    ? (session?.user?.name || session?.user?.email)
-                    : "Sign in"}
+              <Button className="relative overflow-hidden bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white border-0 shadow-lg glow-on-hover font-semibold">
+                <span className="relative z-10 flex items-center gap-2">
+                  {sol.connected && sol.label ? (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      {sol.label}
+                    </>
+                  ) : status === "authenticated" ? (
+                    session?.user?.name || session?.user?.email
+                  ) : (
+                    "Sign in"
+                  )}
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-56">
+            <DropdownMenuContent align="end" className="min-w-56 glass-strong border-border/50">
               {status === "authenticated" ? (
                 <>
                   <DropdownMenuItem onClick={() => signOut()}>Sign out (Google)</DropdownMenuItem>
@@ -110,3 +137,4 @@ export default function Navbar() {
     </nav>
   )
 }
+

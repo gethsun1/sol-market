@@ -5,10 +5,10 @@ import { createAppKit } from "@reown/appkit"
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || ""
 
 const metadata = {
-  name: "SolMarket",
+  name: "Makena E-commerce",
   description: "Solana marketplace with social login",
-  url: typeof window !== "undefined" 
-    ? window.location.origin 
+  url: typeof window !== "undefined"
+    ? window.location.origin
     : process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000",
   icons: ["/icon.svg"],
 }

@@ -152,7 +152,7 @@ export default function AuctionsPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-black via-purple-950/20 to-black">
+      <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-7xl px-6 py-12">
           {/* Header */}
           <div className="mb-12 text-center">
@@ -198,11 +198,10 @@ export default function AuctionsPage() {
               <button
                 key={option}
                 onClick={() => setSortBy(option)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  sortBy === option
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${sortBy === option
                     ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
                     : "border border-foreground/20 text-foreground/70 hover:border-foreground/40"
-                }`}
+                  }`}
               >
                 {option.charAt(0).toUpperCase() + option.slice(1)} {option === "highest" ? "Price" : ""}
               </button>
@@ -287,11 +286,10 @@ export default function AuctionsPage() {
                         e.stopPropagation()
                         toggleLike(auction.id)
                       }}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all ${
-                        auction.liked
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all ${auction.liked
                           ? "bg-pink-500/20 text-pink-400 hover:bg-pink-500/30"
                           : "bg-foreground/10 text-foreground/70 hover:bg-foreground/20"
-                      }`}
+                        }`}
                     >
                       <Heart className="h-4 w-4" fill={auction.liked ? "currentColor" : "none"} />
                       <span className="text-sm font-medium">Like</span>

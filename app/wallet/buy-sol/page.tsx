@@ -23,7 +23,7 @@ export default function BuySolPage() {
   return (
     <div>
       <Navbar />
-      <div className="min-h-screen bg-black px-4 py-8">
+      <div className="min-h-screen bg-background px-4 py-8">
         <div className="mx-auto max-w-2xl">
           {/* Header */}
           <div className="mb-8">

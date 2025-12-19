@@ -1,7 +1,8 @@
 import { neon } from "@neondatabase/serverless"
+import { env } from "./env"
 
-// Initialize Neon SQL client
-const sql = neon(process.env.DATABASE_URL || "")
+// Initialize Neon SQL client with validated environment
+const sql = neon(env.DATABASE_URL)
 
 export { sql }
 
@@ -194,6 +195,7 @@ export async function initializeDatabase() {
         description TEXT,
         category TEXT,
         price_lamports BIGINT NOT NULL,
+        image_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `

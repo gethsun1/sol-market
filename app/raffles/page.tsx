@@ -140,7 +140,7 @@ export default function RafflesPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-black via-purple-950/20 to-black">
+      <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-7xl px-6 py-12">
           {/* Header */}
           <div className="mb-12 text-center">
@@ -188,11 +188,10 @@ export default function RafflesPage() {
               <button
                 key={sector}
                 onClick={() => setSelectedSector(sector)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  selectedSector === sector
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedSector === sector
                     ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
                     : "border border-foreground/20 text-foreground/70 hover:border-foreground/40 hover:text-foreground"
-                }`}
+                  }`}
               >
                 {sector}
               </button>

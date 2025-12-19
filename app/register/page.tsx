@@ -71,7 +71,7 @@ export default function RegisterPage() {
   return (
     <div>
       <Navbar />
-      <div className="min-h-screen bg-black px-4 py-12">
+      <div className="min-h-screen bg-background px-4 py-12">
         <div className="mx-auto max-w-md">
           {step === "wallet" && (
             <Card className="border-border bg-card">
@@ -161,7 +161,7 @@ export default function RegisterPage() {
             <Card className="border-border bg-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
-                <h2 className="text-2xl font-bold text-center mb-2">Welcome to SolMarket!</h2>
+                <h2 className="text-2xl font-bold text-center mb-2">Welcome to Makena E-commerce!</h2>
                 <p className="text-foreground/60 text-center mb-6">Your account has been created successfully</p>
                 <p className="text-sm text-cyan-400 text-center">Redirecting to dashboard...</p>
               </CardContent>

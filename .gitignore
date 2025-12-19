@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# standalone deployment
+/standalone_deploy/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

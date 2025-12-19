@@ -26,12 +26,12 @@ export default function DashboardPage() {
   return (
     <div>
       <Navbar />
-      <div className="min-h-screen bg-black px-4 py-8">
+      <div className="min-h-screen bg-background px-4 py-8">
         <div className="mx-auto max-w-6xl">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2 gradient-text">Dashboard</h1>
-            <p className="text-foreground/70">Welcome back to your SolMarket account</p>
+            <p className="text-foreground/70">Welcome back to your Makena E-commerce account</p>
           </div>
 
           {/* Quick Stats */}
@@ -86,7 +86,7 @@ export default function DashboardPage() {
             {/* Left Column */}
             <div className="lg:col-span-2 space-y-6">
               {/* Profile Card */}
-              <ProfileCard user={USER} onEdit={() => {}} />
+              <ProfileCard user={USER} onEdit={() => { }} />
 
               {/* Quick Actions */}
               <Card className="border-border bg-card">
@@ -148,9 +148,8 @@ export default function DashboardPage() {
                           <p className="text-xs text-foreground/60">{activity.time}</p>
                         </div>
                         <p
-                          className={`font-semibold ${
-                            activity.amount.startsWith("+") ? "text-green-400" : "text-red-400"
-                          }`}
+                          className={`font-semibold ${activity.amount.startsWith("+") ? "text-green-400" : "text-red-400"
+                            }`}
                         >
                           {activity.amount}
                         </p>
@@ -188,11 +187,10 @@ export default function DashboardPage() {
                       <div className="flex items-center justify-between mb-1">
                         <p className="font-medium text-sm line-clamp-1">{listing.title}</p>
                         <span
-                          className={`text-xs px-2 py-1 rounded ${
-                            listing.status === "active"
+                          className={`text-xs px-2 py-1 rounded ${listing.status === "active"
                               ? "bg-green-500/10 text-green-400"
                               : "bg-gray-500/10 text-gray-400"
-                          }`}
+                            }`}
                         >
                           {listing.status}
                         </span>

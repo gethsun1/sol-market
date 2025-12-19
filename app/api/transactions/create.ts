@@ -7,28 +7,50 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { listing_id, amount, buyer_shipping, seller_id } = body
+    const { listing_id, amount, buyer_wallet, seller_id } = body
 
-    // Create transaction in escrow
-    const transaction = await createEscrow("mock-buyer-id", seller_id, listing_id, amount)
+    if (!listing_id || !amount || !buyer_wallet || !seller_id) {
+      return NextResponse.json(
+        { error: "listing_id, amount, buyer_wallet, and seller_id are required" }, 
+        { status: 400 }
+      )
+    }
 
-    // Simulate smart contract transaction
-    const transactionHash = "0x" + Math.random().toString(16).slice(2)
-
-    // Update transaction with hash
-    const result = await sql`
-      UPDATE transactions
-      SET transaction_hash = ${transactionHash}
-      WHERE id = ${transaction.id}
-      RETURNING *
+    // Create or get buyer record
+    const buyerResult = await sql`
+      INSERT INTO users (wallet_address, username, email)
+      VALUES (${buyer_wallet}, ${buyer_wallet}, ${buyer_wallet + "@demo.local"})
+      ON CONFLICT (wallet_address) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+      RETURNING id
     `
+    const buyerId = buyerResult[0].id
+
+    // Create transaction with escrow
+    const transaction = await createEscrow(
+      buyerId,
+      seller_id,
+      listing_id,
+      amount,
+      buyer_wallet
+    )
 
     return NextResponse.json({
-      ...result[0],
-      transaction_hash: transactionHash,
+      success: true,
+      transaction: {
+        id: transaction.id,
+        escrow_address: transaction.escrow_address,
+        status: transaction.status,
+        transaction_hash: transaction.transaction_hash,
+        amount: transaction.amount,
+        created_at: transaction.created_at
+      },
+      explorer_url: `https://explorer.solana.com/account/${transaction.escrow_address}?cluster=devnet`
     })
   } catch (error) {
     console.error("Transaction creation error:", error)
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Transaction failed" }, { status: 500 })
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Transaction failed" }, 
+      { status: 500 }
+    )
   }
 }

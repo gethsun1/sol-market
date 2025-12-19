@@ -1,25 +1,11 @@
-# Apache configuration for Next.js on cPanel
-# This file helps with routing and static asset serving
+# Apache configuration for Next.js Static Export on cPanel
+# Handles client-side routing for SPA deployment
+
+# Disable directory browsing for security and UX
+Options -Indexes
 
 # Enable Rewrite Engine
 RewriteEngine On
-
-# Handle Next.js static files
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-
-# If the file exists, serve it directly
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# For API routes and Next.js routing, proxy to Node.js server
-# Note: This assumes Node.js app is running on a different port
-# Adjust the port number based on your cPanel Node.js app configuration
-# RewriteRule ^(.*)$ http://localhost:PORT/$1 [P,L]
-
-# If using static export, uncomment the following:
-# RewriteRule ^(.*)$ /index.html [L]
 
 # Security: Prevent access to sensitive files
 <FilesMatch "^\.">
@@ -32,6 +18,42 @@ RewriteRule ^ - [L]
     Order allow,deny
     Deny from all
 </FilesMatch>
+
+# ============================================
+# Next.js Static Export Routing Rules
+# ============================================
+
+# If the request is for an actual file or directory, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Handle requests with trailing slash - try to serve directory index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} /$
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}index.html -f
+RewriteRule ^(.*)$ /$1index.html [L]
+
+# Handle requests with trailing slash - try to serve .html file without trailing slash
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} ^(.+)/$
+RewriteCond %{DOCUMENT_ROOT}%1.html -f
+RewriteRule ^(.+)/$ /$1.html [L]
+
+# Handle extensionless URLs - try to serve .html file
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}.html -f
+RewriteRule ^(.*)$ /$1.html [L]
+
+# Fallback to index.html for client-side routing (SPA fallback)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ /index.html [L]
+
+# ============================================
+# Performance Optimization
+# ============================================
 
 # Enable compression
 <IfModule mod_deflate.c>
@@ -46,6 +68,7 @@ RewriteRule ^ - [L]
     ExpiresByType image/gif "access plus 1 year"
     ExpiresByType image/png "access plus 1 year"
     ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
 </IfModule>

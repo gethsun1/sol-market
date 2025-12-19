@@ -42,13 +42,13 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   await initializeDatabase()
   try {
-    const { merchantId, name, description, category, priceLamports } = await request.json()
+    const { merchantId, name, description, category, priceLamports, imageUrl } = await request.json()
     if (!merchantId || !name || typeof priceLamports !== "number") {
       return new Response(JSON.stringify({ error: "merchantId, name, priceLamports required" }), { status: 400 })
     }
     const rows = await sql`
-      INSERT INTO product (merchant_id, name, description, category, price_lamports)
-      VALUES (${merchantId}, ${name}, ${description ?? null}, ${category ?? null}, ${priceLamports})
+      INSERT INTO product (merchant_id, name, description, category, price_lamports, image_url)
+      VALUES (${merchantId}, ${name}, ${description ?? null}, ${category ?? null}, ${priceLamports}, ${imageUrl ?? null})
       RETURNING *
     `
     return Response.json({ product: rows[0] })

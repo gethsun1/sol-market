@@ -49,7 +49,7 @@ export default function CreateListingPage() {
   return (
     <div>
       <Navbar />
-      <div className="min-h-screen bg-black px-4 py-8">
+      <div className="min-h-screen bg-background px-4 py-8">
         <div className="mx-auto max-w-2xl">
           <Card className="border-border bg-card">
             <CardHeader>

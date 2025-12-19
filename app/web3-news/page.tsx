@@ -108,7 +108,7 @@ export default function Web3NewsPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-black via-purple-950/20 to-black">
+      <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-7xl px-6 py-12">
           {/* Header */}
           <div className="mb-12 text-center">
@@ -136,11 +136,10 @@ export default function Web3NewsPage() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      selectedCategory === cat
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedCategory === cat
                         ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
                         : "border border-foreground/20 text-foreground/70 hover:border-foreground/40 hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     {cat}
                   </button>

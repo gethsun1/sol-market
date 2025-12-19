@@ -7,11 +7,16 @@ import "./globals.css"
 import { AuthProviders } from "@/components/auth/providers"
 import { SolanaProvider } from "@/components/solana/solana-provider"
 import { ThemeProvider } from "@/components/theme-provider"
+// Validate environment variables at startup
+import "@/lib/env"
 
 export const metadata: Metadata = {
-  title: "SolMarket - Decentralized Marketplace",
-  description: "Buy and sell merchandise securely using Solana tokens",
+  title: "Makena E-commerce - Decentralized Marketplace",
+  description: "Buy and sell merchandise securely using Solana tokens on Makena E-commerce",
   generator: "v0.app",
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
@@ -24,7 +29,7 @@ export default function RootLayout({
       <body className={`bg-background text-foreground ${GeistSans.variable} ${GeistMono.variable} font-sans`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

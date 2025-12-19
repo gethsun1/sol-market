@@ -29,7 +29,7 @@ export default function WalletPage() {
   return (
     <div>
       <Navbar />
-      <div className="min-h-screen bg-black px-4 py-8">
+      <div className="min-h-screen bg-background px-4 py-8">
         <div className="mx-auto max-w-4xl">
           {/* Header */}
           <div className="mb-8">

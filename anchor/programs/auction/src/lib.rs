@@ -2,7 +2,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::Discriminator;
 
-declare_id!("11111111111111111111111111111111");
+declare_id!("HJdFhhRi3Z3ipPjjbeoXu8x5nBHj7rTaU8D499gLWqqL");
 
 #[program]
 pub mod auction {
