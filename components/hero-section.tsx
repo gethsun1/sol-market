@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Shield, Zap, Users } from "lucide-react"
+import { ArrowRight, Shield, Zap, Users, Sparkles } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -34,15 +34,15 @@ export default function HeroSection() {
       <div className="absolute top-20 right-0 w-1/2 h-1/2 opacity-10 pointer-events-none">
         <BlockchainNetworkSVG className="w-full h-full" />
       </div>
-      
+
       <div className="absolute bottom-20 left-0 w-1/3 h-1/3 opacity-8 pointer-events-none">
         <IsometricCubeSVG className="w-full h-full" />
       </div>
-      
+
       <div className="absolute top-1/2 left-10 w-1/4 h-1/4 opacity-6 pointer-events-none">
         <OrbitingElementsSVG className="w-full h-full" />
       </div>
-      
+
       <div className="absolute top-1/3 right-20 w-1/5 h-1/5 opacity-8 pointer-events-none">
         <HolographicCardSVG className="w-full h-full" />
       </div>
