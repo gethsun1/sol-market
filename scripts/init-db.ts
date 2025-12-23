@@ -1,3 +1,8 @@
+// Load environment variables from .env.local BEFORE any other imports
+import { config } from 'dotenv';
+import { resolve } from 'path';
+config({ path: resolve(process.cwd(), '.env.local') });
+
 import { initializeDatabase } from '../lib/db';
 
 async function main() {
