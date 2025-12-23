@@ -64,7 +64,7 @@ export default function HeroSection() {
 
         {/* Subheading */}
         <p className="mx-auto mb-12 max-w-2xl text-lg md:text-xl text-foreground/80 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-          Buy and sell merchandise securely using Solana tokens. Every transaction protected by smart contract escrow
+          Buy and sell merchandise securely using MKN tokens. Every transaction protected by smart contract escrow
           for complete peace of mind.
         </p>
 
@@ -114,7 +114,7 @@ export default function HeroSection() {
                 <Zap className="h-8 w-8 text-purple-400" />
               </div>
             </div>
-            <div className="text-4xl font-bold mb-2 gradient-text-vibrant">1.2M SOL</div>
+            <div className="text-4xl font-bold mb-2 gradient-text-vibrant">120M MKN</div>
             <div className="text-sm text-foreground/70 font-medium">Total Trading Volume</div>
           </div>
 

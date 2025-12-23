@@ -47,11 +47,11 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!wallet) return
-    ;(async () => {
-      const cartRes = await fetch(`/api/carts?wallet=${wallet}`)
-      const cartData = await cartRes.json()
-      if (cartData.cart) setCart(cartData.cart)
-    })()
+      ; (async () => {
+        const cartRes = await fetch(`/api/carts?wallet=${wallet}`)
+        const cartData = await cartRes.json()
+        if (cartData.cart) setCart(cartData.cart)
+      })()
   }, [wallet])
 
   async function createOrder() {
@@ -198,7 +198,7 @@ export default function CheckoutPage() {
           {result ? (
             <div className="space-y-2">
               <div>Order created: #{result.orderId}</div>
-              <div>Total: {result.totalLamports} lamports</div>
+              <div>Total: {result.totalLamports / 1e3} MKN</div>
               {result.paid ? (
                 <>
                   <div className="text-sm">Payment submitted: {result.paymentTx}</div>
@@ -206,7 +206,7 @@ export default function CheckoutPage() {
                 </>
               ) : (
                 <Button onClick={fundEscrow} disabled={!publicKey || !result.escrowAccount}>
-                  Pay in SOL
+                  Pay in MKN
                 </Button>
               )}
             </div>

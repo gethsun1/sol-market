@@ -137,8 +137,8 @@ export default function Web3NewsPage() {
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
                     className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedCategory === cat
-                        ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
-                        : "border border-foreground/20 text-foreground/70 hover:border-foreground/40 hover:text-foreground"
+                      ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
+                      : "border border-foreground/20 text-foreground/70 hover:border-foreground/40 hover:text-foreground"
                       }`}
                   >
                     {cat}
@@ -189,7 +189,7 @@ export default function Web3NewsPage() {
                   <TrendingUp className="h-5 w-5 text-cyan-400" />
                   <h2 className="text-xl font-bold">Top 10 Currency Rates</h2>
                 </div>
-                <div className="text-sm text-foreground/60 mb-4">Exchange rates to SOL</div>
+                <div className="text-sm text-foreground/60 mb-4">Exchange rates to MKN</div>
 
                 <div className="space-y-4">
                   {currencyRates.map((currency) => (
@@ -202,7 +202,7 @@ export default function Web3NewsPage() {
                         <div className="text-xs text-foreground/50">{currency.name}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold">{currency.rateToSol.toFixed(4)} SOL</div>
+                        <div className="font-semibold">{(currency.rateToSol * 100).toFixed(2)} MKN</div>
                         <div className={`text-xs ${currency.change24h >= 0 ? "text-green-400" : "text-red-400"}`}>
                           {currency.change24h >= 0 ? "+" : ""}
                           {currency.change24h.toFixed(2)}%

@@ -8,10 +8,10 @@ import { ArrowRight, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const TOKEN_PACKAGES = [
-  { tokens: 100, sol: 0.5, bonus: "0%" },
-  { tokens: 500, sol: 2.3, bonus: "5%" },
-  { tokens: 1000, sol: 4.4, bonus: "10%" },
-  { tokens: 5000, sol: 20.0, bonus: "15%" },
+  { tokens: 100, sol: 1.0, bonus: "0%" },
+  { tokens: 500, sol: 4.5, bonus: "5%" },
+  { tokens: 1000, sol: 8.0, bonus: "10%" },
+  { tokens: 5000, sol: 35.0, bonus: "15%" },
 ]
 
 export default function BuyTokensPage() {
@@ -37,7 +37,7 @@ export default function BuyTokensPage() {
         <div className="mx-auto max-w-4xl">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2 gradient-text">Buy Tokens</h1>
+            <h1 className="text-4xl font-bold mb-2 gradient-text">Buy MKN</h1>
             <p className="text-foreground/70">Exchange SOL for platform tokens</p>
           </div>
 
@@ -48,16 +48,15 @@ export default function BuyTokensPage() {
               {TOKEN_PACKAGES.map((pkg, idx) => (
                 <Card
                   key={idx}
-                  className={`border-2 cursor-pointer transition-all ${
-                    selectedPackage === idx
+                  className={`border-2 cursor-pointer transition-all ${selectedPackage === idx
                       ? "border-purple-500 bg-purple-500/5"
                       : "border-border hover:border-purple-500/50"
-                  }`}
+                    }`}
                   onClick={() => setSelectedPackage(idx)}
                 >
                   <CardContent className="p-6 flex items-center justify-between">
                     <div>
-                      <p className="text-2xl font-bold mb-1">{pkg.tokens} TOKENS</p>
+                      <p className="text-2xl font-bold mb-1">{pkg.tokens} MKN</p>
                       <p className="text-sm text-foreground/60">{pkg.sol} SOL</p>
                     </div>
                     <div className="text-right">
@@ -87,7 +86,7 @@ export default function BuyTokensPage() {
                     />
                   </div>
                   <p className="text-sm text-foreground/60">
-                    ≈ {customAmount ? (Number.parseFloat(customAmount) * 222).toFixed(0) : "0"} TOKENS
+                    ≈ {customAmount ? (Number.parseFloat(customAmount) * 100).toFixed(0) : "0"} MKN
                   </p>
                 </CardContent>
               </Card>
@@ -103,13 +102,13 @@ export default function BuyTokensPage() {
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="text-xs">
-                      Tokens will be credited immediately upon payment confirmation
+                      MKN will be credited immediately upon payment confirmation
                     </AlertDescription>
                   </Alert>
 
                   <div className="space-y-3 py-4 border-t border-b border-border">
                     <div className="flex justify-between">
-                      <span className="text-foreground/60">Tokens</span>
+                      <span className="text-foreground/60">MKN</span>
                       <span className="font-semibold">{selected.tokens}</span>
                     </div>
                     <div className="flex justify-between">
@@ -119,7 +118,7 @@ export default function BuyTokensPage() {
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-foreground/60">Total Tokens</span>
+                      <span className="text-foreground/60">Total MKN</span>
                       <span className="font-semibold text-cyan-400">
                         {(selected.tokens + (selected.tokens * Number.parseFloat(selected.bonus)) / 100).toFixed(0)}
                       </span>

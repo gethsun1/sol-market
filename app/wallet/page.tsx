@@ -19,8 +19,8 @@ export default function WalletPage() {
   const sol = useSolanaWallet()
   const [balance, setBalance] = useState<WalletBalance>({
     sol: 5.25,
-    tokens: 1250.5,
-    escrow: 0.75,
+    tokens: 125050,
+    escrow: 75,
   })
 
   const [showTransfer, setShowTransfer] = useState(false)
@@ -59,10 +59,10 @@ export default function WalletPage() {
             {/* Token Balance */}
             <Card className="border-border bg-gradient-to-br from-cyan-500/10 to-blue-600/10">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-foreground/70">Token Balance</CardTitle>
+                <CardTitle className="text-sm font-medium text-foreground/70">MKN Balance</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold mb-2 text-purple-400">{balance.tokens} TOKENS</div>
+                <div className="text-3xl font-bold mb-2 text-purple-400">{balance.tokens.toLocaleString()} MKN</div>
                 <p className="text-sm text-foreground/60">Available for trading</p>
               </CardContent>
             </Card>
@@ -73,7 +73,7 @@ export default function WalletPage() {
                 <CardTitle className="text-sm font-medium text-foreground/70">In Escrow</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold mb-2 text-emerald-400">{balance.escrow} SOL</div>
+                <div className="text-3xl font-bold mb-2 text-emerald-400">{balance.escrow} MKN</div>
                 <p className="text-sm text-foreground/60">Pending transactions</p>
               </CardContent>
             </Card>
@@ -90,7 +90,7 @@ export default function WalletPage() {
             <Link href="/wallet/buy-tokens">
               <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 gap-2">
                 <Plus className="h-4 w-4" />
-                Buy Tokens
+                Buy MKN
               </Button>
             </Link>
             <Button
@@ -111,7 +111,7 @@ export default function WalletPage() {
           {showTransfer && (
             <Card className="border-border bg-card mb-8">
               <CardHeader>
-                <CardTitle>Send SOL</CardTitle>
+                <CardTitle>Send MKN</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -123,7 +123,7 @@ export default function WalletPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Amount (SOL)</label>
+                  <label className="block text-sm font-medium mb-2">Amount (MKN)</label>
                   <input
                     type="number"
                     value={transferAmount}
@@ -155,31 +155,30 @@ export default function WalletPage() {
                   {
                     id: "1",
                     type: "received",
-                    description: "Received SOL from token exchange",
-                    amount: "+2.5 SOL",
+                    description: "Received MKN from token exchange",
+                    amount: "+250 MKN",
                     time: "2 hours ago",
                   },
                   {
                     id: "2",
                     type: "sent",
                     description: "Purchased vintage leather jacket",
-                    amount: "-2.5 SOL",
+                    amount: "-250 MKN",
                     time: "1 day ago",
                   },
                   {
                     id: "3",
                     type: "received",
                     description: "Escrow release - Sold digital art",
-                    amount: "+8.5 SOL",
+                    amount: "+850 MKN",
                     time: "3 days ago",
                   },
                 ].map((tx) => (
                   <div key={tx.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`p-2 rounded-lg ${
-                          tx.type === "received" ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
-                        }`}
+                        className={`p-2 rounded-lg ${tx.type === "received" ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
+                          }`}
                       >
                         {tx.type === "received" ? (
                           <ArrowDownLeft className="h-5 w-5" />

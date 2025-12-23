@@ -17,8 +17,8 @@ const USER = {
 
 export default function DashboardPage() {
   const stats = {
-    totalSpent: 20.75,
-    totalEarned: 22.0,
+    totalSpent: 2075,
+    totalEarned: 2200,
     activeListings: 3,
     pendingTransactions: 2,
   }
@@ -41,7 +41,7 @@ export default function DashboardPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-foreground/60 mb-1">Total Spent</p>
-                    <p className="text-3xl font-bold text-red-400">{stats.totalSpent} SOL</p>
+                    <p className="text-3xl font-bold text-red-400">{stats.totalSpent} MKN</p>
                   </div>
                   <ShoppingCart className="h-8 w-8 text-red-400/30" />
                 </div>
@@ -52,7 +52,7 @@ export default function DashboardPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-foreground/60 mb-1">Total Earned</p>
-                    <p className="text-3xl font-bold text-green-400">{stats.totalEarned} SOL</p>
+                    <p className="text-3xl font-bold text-green-400">{stats.totalEarned} MKN</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-green-400/30" />
                 </div>
@@ -136,8 +136,8 @@ export default function DashboardPage() {
                 <CardContent>
                   <div className="space-y-3">
                     {[
-                      { action: "Purchased", item: "Vintage Leather Jacket", amount: "-2.5 SOL", time: "2h ago" },
-                      { action: "Sold", item: "Digital Art NFT Bundle", amount: "+8.5 SOL", time: "1d ago" },
+                      { action: "Purchased", item: "Vintage Leather Jacket", amount: "-250 MKN", time: "2h ago" },
+                      { action: "Sold", item: "Digital Art NFT Bundle", amount: "+850 MKN", time: "1d ago" },
                       { action: "Listed", item: "Gaming Console", amount: "Pending", time: "3d ago" },
                     ].map((activity, idx) => (
                       <div key={idx} className="flex items-center justify-between p-3 border border-border rounded-lg">
@@ -179,23 +179,23 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {[
-                    { title: "Rare Gaming Console", status: "active", price: "15.0" },
-                    { title: "Collectible Cards", status: "sold", price: "5.2" },
-                    { title: "Digital Artwork", status: "active", price: "8.5" },
+                    { title: "Rare Gaming Console", status: "active", price: "1500" },
+                    { title: "Collectible Cards", status: "sold", price: "520" },
+                    { title: "Digital Artwork", status: "active", price: "850" },
                   ].map((listing, idx) => (
                     <div key={idx} className="p-3 border border-border rounded-lg">
                       <div className="flex items-center justify-between mb-1">
                         <p className="font-medium text-sm line-clamp-1">{listing.title}</p>
                         <span
                           className={`text-xs px-2 py-1 rounded ${listing.status === "active"
-                              ? "bg-green-500/10 text-green-400"
-                              : "bg-gray-500/10 text-gray-400"
+                            ? "bg-green-500/10 text-green-400"
+                            : "bg-gray-500/10 text-gray-400"
                             }`}
                         >
                           {listing.status}
                         </span>
                       </div>
-                      <p className="text-sm text-cyan-400 font-semibold">{listing.price} SOL</p>
+                      <p className="text-sm text-cyan-400 font-semibold">{listing.price} MKN</p>
                     </div>
                   ))}
                 </CardContent>

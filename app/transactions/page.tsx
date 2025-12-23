@@ -23,17 +23,17 @@ const MOCK_TRANSACTIONS: Transaction[] = [
     id: "1",
     type: "buy",
     title: "Vintage Leather Jacket",
-    amount: 2.5,
+    amount: 250,
     status: "completed",
     date: "2024-01-15",
-    counterparty: "fashionista_sol",
+    counterparty: "fashionista_mkn",
     escrowStatus: "released",
   },
   {
     id: "2",
     type: "sell",
     title: "Digital Art NFT Bundle",
-    amount: 8.5,
+    amount: 850,
     status: "pending",
     date: "2024-01-14",
     counterparty: "collector_pro",
@@ -43,7 +43,7 @@ const MOCK_TRANSACTIONS: Transaction[] = [
     id: "3",
     type: "buy",
     title: "Rare Gaming Console",
-    amount: 15.0,
+    amount: 1500,
     status: "completed",
     date: "2024-01-10",
     counterparty: "gamer_pro",
@@ -53,17 +53,17 @@ const MOCK_TRANSACTIONS: Transaction[] = [
     id: "4",
     type: "sell",
     title: "Collectible Trading Cards Set",
-    amount: 5.2,
+    amount: 520,
     status: "completed",
     date: "2024-01-05",
-    counterparty: "trader_sol",
+    counterparty: "trader_mkn",
     escrowStatus: "released",
   },
   {
     id: "5",
     type: "buy",
     title: "Retro Gaming Cabinet",
-    amount: 12.3,
+    amount: 1230,
     status: "disputed",
     date: "2024-01-02",
     counterparty: "arcade_fan",
@@ -124,7 +124,7 @@ export default function TransactionsPage() {
             <Card className="border-border bg-card">
               <CardContent className="pt-6">
                 <p className="text-sm text-foreground/60 mb-1">Total Volume</p>
-                <p className="text-3xl font-bold text-cyan-400">{stats.totalVolume} SOL</p>
+                <p className="text-3xl font-bold text-cyan-400">{stats.totalVolume.toLocaleString()} MKN</p>
               </CardContent>
             </Card>
           </div>
@@ -144,31 +144,28 @@ export default function TransactionsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setTypeFilter("all")}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    typeFilter === "all"
+                  className={`px-4 py-2 rounded-lg transition-all ${typeFilter === "all"
                       ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white"
                       : "border border-border hover:border-purple-500/50"
-                  }`}
+                    }`}
                 >
                   All
                 </button>
                 <button
                   onClick={() => setTypeFilter("buy")}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    typeFilter === "buy"
+                  className={`px-4 py-2 rounded-lg transition-all ${typeFilter === "buy"
                       ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white"
                       : "border border-border hover:border-purple-500/50"
-                  }`}
+                    }`}
                 >
                   Purchases
                 </button>
                 <button
                   onClick={() => setTypeFilter("sell")}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    typeFilter === "sell"
+                  className={`px-4 py-2 rounded-lg transition-all ${typeFilter === "sell"
                       ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white"
                       : "border border-border hover:border-purple-500/50"
-                  }`}
+                    }`}
                 >
                   Sales
                 </button>
@@ -178,31 +175,28 @@ export default function TransactionsPage() {
               <div className="flex gap-2 ml-auto">
                 <button
                   onClick={() => setStatusFilter("all")}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    statusFilter === "all"
+                  className={`px-4 py-2 rounded-lg transition-all ${statusFilter === "all"
                       ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
                       : "border border-border hover:border-cyan-500/50"
-                  }`}
+                    }`}
                 >
                   All Status
                 </button>
                 <button
                   onClick={() => setStatusFilter("completed")}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    statusFilter === "completed"
+                  className={`px-4 py-2 rounded-lg transition-all ${statusFilter === "completed"
                       ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
                       : "border border-border hover:border-cyan-500/50"
-                  }`}
+                    }`}
                 >
                   Completed
                 </button>
                 <button
                   onClick={() => setStatusFilter("pending")}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    statusFilter === "pending"
+                  className={`px-4 py-2 rounded-lg transition-all ${statusFilter === "pending"
                       ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
                       : "border border-border hover:border-cyan-500/50"
-                  }`}
+                    }`}
                 >
                   Pending
                 </button>
@@ -220,9 +214,8 @@ export default function TransactionsPage() {
                       {/* Left - Type and Icon */}
                       <div className="flex items-center gap-4">
                         <div
-                          className={`p-3 rounded-lg ${
-                            tx.type === "buy" ? "bg-blue-500/10 text-blue-400" : "bg-green-500/10 text-green-400"
-                          }`}
+                          className={`p-3 rounded-lg ${tx.type === "buy" ? "bg-blue-500/10 text-blue-400" : "bg-green-500/10 text-green-400"
+                            }`}
                         >
                           {tx.type === "buy" ? (
                             <ArrowDownLeft className="h-6 w-6" />
@@ -251,18 +244,17 @@ export default function TransactionsPage() {
                           className={`text-lg font-bold mb-1 ${tx.type === "buy" ? "text-red-400" : "text-green-400"}`}
                         >
                           {tx.type === "buy" ? "-" : "+"}
-                          {tx.amount} SOL
+                          {tx.amount} MKN
                         </p>
                         <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                            tx.status === "completed"
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${tx.status === "completed"
                               ? "bg-green-500/10 text-green-400"
                               : tx.status === "pending"
                                 ? "bg-yellow-500/10 text-yellow-400"
                                 : tx.status === "disputed"
                                   ? "bg-red-500/10 text-red-400"
                                   : "bg-blue-500/10 text-blue-400"
-                          }`}
+                            }`}
                         >
                           {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
                         </span>
