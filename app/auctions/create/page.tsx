@@ -1,13 +1,16 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Navbar from "@/components/navbar"
-import { Gavel, MessageCircle } from "lucide-react"
+import { Gavel, MessageCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useAuction } from "@/hooks/useAuction"
+import { useRouter } from "next/navigation"
 
 export default function CreateAuctionPage() {
+  const router = useRouter()
+  const { createAuction, loading } = useAuction()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -34,9 +37,43 @@ export default function CreateAuctionPage() {
     }))
   }
 
-  const handleCreateAuction = (e: React.FormEvent) => {
+  const handleCreateAuction = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert("Your auction has been created successfully!")
+
+    // Parse Date Time
+    const startUnix = Math.floor(Date.now() / 1000)
+    const endDateTimeStr = `${formData.endDate}T${formData.endTime}:00`
+    const endUnix = Math.floor(new Date(endDateTimeStr).getTime() / 1000)
+
+    if (endUnix <= startUnix) {
+      alert("End time must be in the future")
+      return
+    }
+
+    const startingPriceLamports = formData.startingPrice * 1e9 // SOL to Lamports
+    const minIncrement = startingPriceLamports * 0.05 // 5% increment default
+
+    await createAuction(
+      startUnix,
+      endUnix,
+      startingPriceLamports,
+      minIncrement,
+      300 // 5 min anti-snipe
+    )
+
+    // On success (hook handles toast), ideally redirect or clear
+    // Since hook returns address on success, we could redirect to detail page
+    // For now stay here or clear form? Let's clear form.
+    setFormData({
+      title: "",
+      description: "",
+      productType: "store",
+      startingPrice: 100,
+      endDate: "",
+      endTime: "18:00",
+      goodwillMessage: "",
+      socialHandle: "",
+    })
   }
 
   return (
@@ -114,8 +151,8 @@ export default function CreateAuctionPage() {
                   name="startingPrice"
                   value={formData.startingPrice}
                   onChange={handleInputChange}
-                  step="10"
-                  min="10"
+                  step="0.1"
+                  min="0.1"
                   className="w-full rounded-lg border border-foreground/20 bg-foreground/5 px-4 py-3 text-foreground focus:border-cyan-500 focus:outline-none"
                   required
                 />
@@ -199,9 +236,15 @@ export default function CreateAuctionPage() {
             <div className="flex gap-4">
               <Button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600"
+                disabled={loading}
+                className="flex-1 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 disabled:opacity-50"
               >
-                Create Auction
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating on Chain...
+                  </>
+                ) : "Create Auction"}
               </Button>
               <Button type="button" variant="outline" className="flex-1 bg-transparent">
                 Cancel

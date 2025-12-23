@@ -1,0 +1,18 @@
+{
+    "name": "Makena Token",
+    "symbol": "MKN",
+    "description": "MKN is the native utility token powering escrow, auctions, and trustless commerce on the Makena Ecommerce platform on Solana.",
+    "image": "https://amaranth-accused-buzzard-564.mypinata.cloud/ipfs/bafkreickphbl4t46deyq25fm6xlfe2epjlcgczwwvhca3sobz566tmevna?pinataGatewayToken=CWiBnEp0T8nVTvG6jm7Zh0RZtSYX5DozDCp5Z-wSuovmm1NIFXMreC44IHmovRWt",
+    "external_url": "https://makenadao.com",
+    "seller_fee_basis_points": 0,
+    "attributes": [
+        {
+            "trait_type": "Utility",
+            "value": "Escrow Currency"
+        },
+        {
+            "trait_type": "Network",
+            "value": "Solana Devnet"
+        }
+    ]
+}

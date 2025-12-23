@@ -2,12 +2,12 @@
 anchor_version = "0.30.1"
 
 [features]
-resolution = true
+resolution = false
 skip-lint = false
 
 [programs.devnet]
 auction = "HJdFhhRi3Z3ipPjjbeoXu8x5nBHj7rTaU8D499gLWqqL"
-escrow = "8jR5GeNzeweq35Uo84kGP3v1NcBaZWH5u62k7PxN4T2y"
+escrow = "33umURgaFrrQvJ8K7XrFXfVyUZsp3amfRBqyuEvPP5Wu"
 raffle = "AtbQBffhFkabRYCSTSa8BEjrCcV6tnD2AhJoNWSuBUvq"
 
 [registry]

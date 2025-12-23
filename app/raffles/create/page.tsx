@@ -1,15 +1,16 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Navbar from "@/components/navbar"
-import { Gift, AlertCircle } from "lucide-react"
+import { Gift, AlertCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useRaffle } from "@/hooks/useRaffle"
 
 const sectors = ["IT", "TRANSPORT", "APPAREL", "EDUCATION"]
 
 export default function CreateRafflePage() {
+  const { initializeRaffle, loading } = useRaffle()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -32,13 +33,32 @@ export default function CreateRafflePage() {
     }))
   }
 
-  const handleCreateRaffle = (e: React.FormEvent) => {
+  const handleCreateRaffle = async (e: React.FormEvent) => {
     e.preventDefault()
     if (raffleCount >= maxRaffles) {
       alert("You have reached the maximum of 3 raffles")
       return
     }
-    alert(`Raffle created! You can create ${maxRaffles - raffleCount} more raffle(s).`)
+
+    // Parse Date Time
+    const startUnix = Math.floor(Date.now() / 1000)
+    const endDateTimeStr = `${formData.endDate}T${formData.endTime}:00`
+    const endUnix = Math.floor(new Date(endDateTimeStr).getTime() / 1000)
+
+    if (endUnix <= startUnix) {
+      alert("End time must be in the future")
+      return
+    }
+
+    const ticketPriceLamports = formData.ticketPrice * 1e9
+
+    await initializeRaffle(
+      0, // Category (TODO: map sector string to u8)
+      endUnix,
+      ticketPriceLamports
+    )
+
+    // On success
     setRaffleCount(raffleCount + 1)
     setFormData({
       title: "",
@@ -222,10 +242,15 @@ export default function CreateRafflePage() {
             <div className="flex gap-4">
               <Button
                 type="submit"
-                disabled={raffleCount >= maxRaffles}
+                disabled={raffleCount >= maxRaffles || loading}
                 className="flex-1 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {raffleCount >= maxRaffles ? "Maximum Raffles Reached" : "Create Raffle"}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating on Chain...
+                  </>
+                ) : (raffleCount >= maxRaffles ? "Maximum Raffles Reached" : "Create Raffle")}
               </Button>
               <Button type="button" variant="outline" className="flex-1 bg-transparent">
                 Cancel

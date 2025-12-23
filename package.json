@@ -21,6 +21,9 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "@hookform/resolvers": "^3.9.1",
+    "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
+    "@metaplex-foundation/umi": "^1.4.1",
+    "@metaplex-foundation/umi-bundle-defaults": "^1.4.1",
     "@neondatabase/serverless": "latest",
     "@paper-design/shaders-react": "latest",
     "@radix-ui/react-accordion": "1.2.2",
@@ -50,6 +53,7 @@
     "@radix-ui/react-toggle": "1.1.1",
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
+    "@solana/spl-token": "^0.4.14",
     "@solana/wallet-adapter-react": "0.15.39",
     "@solana/wallet-adapter-react-ui": "0.9.39",
     "@solana/wallet-adapter-wallets": "0.19.32",
