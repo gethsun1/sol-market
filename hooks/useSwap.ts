@@ -75,6 +75,13 @@ export function useSwap() {
 
         try {
             setLoading(true);
+
+            // Validate input amount
+            if (!solAmount || isNaN(solAmount) || solAmount <= 0) {
+                toast.error("Invalid swap amount");
+                return;
+            }
+
             const [vaultPda] = PublicKey.findProgramAddressSync(
                 [Buffer.from("mkn_vault")],
                 program.programId
@@ -101,8 +108,11 @@ export function useSwap() {
                 );
             }
 
+            // Convert to lamports and ensure it's an integer
+            const lamports = Math.floor(solAmount * 1e9);
+
             const tx = await program.methods
-                .swapSolToMkn(new BN(solAmount * 1e9))
+                .swapSolToMkn(new BN(lamports))
                 .accounts({
                     user: wallet.publicKey,
                     vaultPda: vaultPda,
@@ -131,6 +141,13 @@ export function useSwap() {
 
         try {
             setLoading(true);
+
+            // Validate input amount
+            if (!mknAmount || isNaN(mknAmount) || mknAmount <= 0) {
+                toast.error("Invalid swap amount");
+                return;
+            }
+
             const [vaultPda] = PublicKey.findProgramAddressSync(
                 [Buffer.from("mkn_vault")],
                 program.programId
@@ -143,8 +160,11 @@ export function useSwap() {
 
             const userTokenAccount = await getAssociatedTokenAddress(MKN_TOKEN_MINT, wallet.publicKey);
 
+            // Convert to smallest unit and ensure it's an integer (MKN has 6 decimals)
+            const mknUnits = Math.floor(mknAmount * 1e6);
+
             const tx = await program.methods
-                .swapMknToSol(new BN(mknAmount * 1e6)) // MKN has 6 decimals
+                .swapMknToSol(new BN(mknUnits))
                 .accounts({
                     user: wallet.publicKey,
                     vaultPda: vaultPda,
