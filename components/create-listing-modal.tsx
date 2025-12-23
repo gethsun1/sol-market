@@ -60,7 +60,7 @@ export function CreateListingModal() {
                 <DialogHeader>
                     <DialogTitle>Create New Listing</DialogTitle>
                     <DialogDescription>
-                        Set up an escrow for your item. This will lock your SOL.
+                        Set up an escrow for your item. This will lock your MKN.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -90,7 +90,7 @@ export function CreateListingModal() {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="price" className="text-right">
-                            Price (SOL)
+                            Price (MKN)
                         </Label>
                         <Input
                             id="price"
