@@ -132,7 +132,7 @@ export default function RafflesPage() {
     selectedSector === "All" ? mockRaffles : mockRaffles.filter((raffle) => raffle.sector === selectedSector)
 
   const handleBuyTickets = (raffleId: string, price: number) => {
-    alert(`Proceeding to buy raffle tickets for ${price} SOL...`)
+    alert(`Proceeding to buy raffle tickets for ${price} MKN...`)
   }
 
   const activeMerchantRaffles = Array.from(new Set(mockRaffles.map((r) => r.merchantName))).length
@@ -189,8 +189,8 @@ export default function RafflesPage() {
                 key={sector}
                 onClick={() => setSelectedSector(sector)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedSector === sector
-                    ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
-                    : "border border-foreground/20 text-foreground/70 hover:border-foreground/40 hover:text-foreground"
+                  ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
+                  : "border border-foreground/20 text-foreground/70 hover:border-foreground/40 hover:text-foreground"
                   }`}
               >
                 {sector}
@@ -270,7 +270,7 @@ export default function RafflesPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-xs text-foreground/60 mb-1">Per Ticket</div>
-                        <div className="text-xl font-bold text-purple-400">{raffle.solPrice} SOL</div>
+                        <div className="text-xl font-bold text-purple-400">{raffle.ticketPrice} MKN</div>
                       </div>
                       <Button
                         onClick={() => handleBuyTickets(raffle.id, raffle.ticketPrice)}

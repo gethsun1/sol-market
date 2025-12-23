@@ -7,6 +7,17 @@ import { Search, Plus, Sparkles } from "lucide-react"
 import Link from "next/link"
 import ListingCard from "@/components/listing-card"
 import { ShoppingCartSVG } from "@/components/svg-illustrations"
+import { SwapWidget } from "@/components/SwapWidget"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Coins } from "lucide-react"
+import { useTokenBalance } from "@/hooks/useTokenBalance"
 
 const MOCK_LISTINGS = [
   {
@@ -57,6 +68,7 @@ export default function MarketplacePage() {
   const [listings, setListings] = useState(MOCK_LISTINGS)
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
+  const { balance: mknBalance } = useTokenBalance();
 
   const filteredListings = listings.filter((listing) => {
     const matchesCategory = selectedCategory === "All" || listing.category === selectedCategory
@@ -99,13 +111,34 @@ export default function MarketplacePage() {
               />
             </div>
 
-            {/* Add Listing Button */}
-            <Link href="/marketplace/create">
-              <Button className="w-full md:w-auto bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 gap-2 h-12 px-6 shadow-lg glow-on-hover font-semibold">
-                <Plus className="h-5 w-5" />
-                Add Listing
-              </Button>
-            </Link>
+            {/* Actions */}
+            <div className="flex flex-wrap items-center gap-4">
+              {/* MKN Balance and Swap */}
+              <div className="flex items-center gap-3 px-4 py-2 glass-strong rounded-xl border border-white/10 shadow-lg glow-purple/20">
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] uppercase tracking-wider text-purple-400 font-bold">MKN Balance</span>
+                  <span className="text-lg font-bold text-white leading-none whitespace-nowrap">{mknBalance?.toFixed(2) || "0.00"}</span>
+                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-purple-500/20 hover:bg-purple-500/40 text-purple-400 transition-all hover:scale-110">
+                      <Coins className="h-5 w-5" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-transparent border-0 p-0 max-w-sm shadow-none">
+                    <SwapWidget />
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Add Listing Button */}
+              <Link href="/marketplace/create">
+                <Button className="w-full md:w-auto bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 gap-2 h-12 px-6 shadow-lg glow-on-hover font-semibold">
+                  <Plus className="h-5 w-5" />
+                  Add Listing
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Categories */}
@@ -115,8 +148,8 @@ export default function MarketplacePage() {
                 key={category}
                 onClick={() => setSelectedCategory(category)}
                 className={`px-6 py-2.5 rounded-xl font-medium transition-all transform hover:scale-105 ${selectedCategory === category
-                    ? "bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg glow-purple"
-                    : "glass border-2 border-border text-foreground/70 hover:border-purple-500/50 hover:text-foreground"
+                  ? "bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 text-white shadow-lg glow-purple"
+                  : "glass border-2 border-border text-foreground/70 hover:border-purple-500/50 hover:text-foreground"
                   }`}
               >
                 {category}

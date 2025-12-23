@@ -6,10 +6,12 @@ import Navbar from "@/components/navbar"
 import { Gift, AlertCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRaffle } from "@/hooks/useRaffle"
+import { useWallet } from "@solana/wallet-adapter-react"
 
 const sectors = ["IT", "TRANSPORT", "APPAREL", "EDUCATION"]
 
 export default function CreateRafflePage() {
+  const { publicKey } = useWallet()
   const { initializeRaffle, loading } = useRaffle()
   const [formData, setFormData] = useState({
     title: "",
@@ -50,12 +52,15 @@ export default function CreateRafflePage() {
       return
     }
 
-    const ticketPriceLamports = formData.ticketPrice * 1e9
+    const ticketPriceUnits = formData.ticketPrice * 1e6
+
+    if (!publicKey) return;
 
     await initializeRaffle(
+      publicKey,
       0, // Category (TODO: map sector string to u8)
       endUnix,
-      ticketPriceLamports
+      ticketPriceUnits
     )
 
     // On success
@@ -175,14 +180,14 @@ export default function CreateRafflePage() {
             {/* Pricing */}
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-semibold mb-2">Ticket Price (SOL)</label>
+                <label className="block text-sm font-semibold mb-2">Ticket Price (MKN)</label>
                 <input
                   type="number"
                   name="ticketPrice"
                   value={formData.ticketPrice}
                   onChange={handleInputChange}
-                  step="0.1"
-                  min="0.1"
+                  step="1"
+                  min="1"
                   className="w-full rounded-lg border border-foreground/20 bg-foreground/5 px-4 py-3 text-foreground focus:border-purple-500 focus:outline-none"
                   required
                 />
@@ -234,7 +239,7 @@ export default function CreateRafflePage() {
             <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-4">
               <div className="text-sm text-foreground/70 mb-2">Estimated Revenue</div>
               <div className="text-2xl font-bold text-purple-400">
-                {(formData.ticketPrice * formData.totalTickets).toFixed(2)} SOL
+                {(formData.ticketPrice * formData.totalTickets).toFixed(2)} MKN
               </div>
             </div>
 

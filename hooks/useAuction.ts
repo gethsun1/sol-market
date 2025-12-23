@@ -1,12 +1,19 @@
 
-import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { useEffect, useState, useCallback } from "react";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useState, useCallback } from "react";
 import { Program, Idl, AnchorProvider, BN, web3 } from "@coral-xyz/anchor";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, SYSVAR_RENT_PUBKEY, SystemProgram } from "@solana/web3.js";
 import { AUCTION_PROGRAM_ID } from "@/lib/constants";
 import { toast } from "sonner";
+import {
+    TOKEN_PROGRAM_ID,
+    getAssociatedTokenAddress,
+    getAccount,
+    createAssociatedTokenAccountInstruction
+} from "@solana/spl-token";
+import { MKN_TOKEN_MINT } from "@/lib/constants";
 
-// Minimal IDL definition for interaction (we could import the JSON, but inline is faster for now)
+// Minimal IDL definition for interaction
 const IDL: Idl = {
     "version": "0.1.0",
     "name": "auction",
@@ -14,40 +21,68 @@ const IDL: Idl = {
         {
             "name": "createAuction",
             "accounts": [
-                { "name": "payer", "isMut": true, "isSigner": true },
-                { "name": "systemProgram", "isMut": false, "isSigner": false },
-                { "name": "auction", "isMut": true, "isSigner": true },
-                { "name": "merchant", "isMut": false, "isSigner": false }
+                { "name": "payer", "writable": true, "signer": true },
+                { "name": "mknMint", "writable": false, "signer": false },
+                { "name": "auction", "writable": true, "signer": false },
+                { "name": "auctionVault", "writable": true, "signer": false },
+                { "name": "merchant", "writable": false, "signer": false },
+                { "name": "systemProgram", "writable": false, "signer": false },
+                { "name": "tokenProgram", "writable": false, "signer": false },
+                { "name": "rent", "writable": false, "signer": false }
             ],
             "args": [
                 { "name": "startTimeUnix", "type": "i64" },
                 { "name": "endTimeUnix", "type": "i64" },
-                { "name": "reservePriceLamports", "type": "u64" },
-                { "name": "minIncrementLamports", "type": "u64" },
+                { "name": "reservePriceMkn", "type": "u64" },
+                { "name": "minIncrementMkn", "type": "u64" },
                 { "name": "antiSnipeWindowSecs", "type": "i64" }
             ]
         },
         {
             "name": "placeBid",
             "accounts": [
-                { "name": "bidder", "isMut": true, "isSigner": true },
-                { "name": "systemProgram", "isMut": false, "isSigner": false },
-                { "name": "auction", "isMut": true, "isSigner": false },
-                { "name": "previousBidder", "isMut": true, "isSigner": false }
+                { "name": "bidder", "writable": true, "signer": true },
+                { "name": "auction", "writable": true, "signer": false },
+                { "name": "auctionVault", "writable": true, "signer": false },
+                { "name": "bidderTokenAccount", "writable": true, "signer": false },
+                { "name": "previousBidderTokenAccount", "writable": true, "signer": false },
+                { "name": "tokenProgram", "writable": false, "signer": false }
             ],
             "args": [
-                { "name": "amountLamports", "type": "u64" }
+                { "name": "amountMkn", "type": "u64" }
             ]
         },
         {
             "name": "settle",
             "accounts": [
-                { "name": "authority", "isMut": true, "isSigner": true },
-                { "name": "systemProgram", "isMut": false, "isSigner": false },
-                { "name": "auction", "isMut": true, "isSigner": false },
-                { "name": "merchantRecipient", "isMut": true, "isSigner": false }
+                { "name": "authority", "writable": true, "signer": true },
+                { "name": "auction", "writable": true, "signer": false },
+                { "name": "auctionVault", "writable": true, "signer": false },
+                { "name": "merchantTokenAccount", "writable": true, "signer": false },
+                { "name": "merchantRecipient", "writable": true, "signer": false },
+                { "name": "tokenProgram", "writable": false, "signer": false }
             ],
             "args": []
+        }
+    ],
+    "accounts": [
+        {
+            "name": "Auction",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "merchant", "type": "pubkey" },
+                    { "name": "mknMint", "type": "pubkey" },
+                    { "name": "startTimeUnix", "type": "i64" },
+                    { "name": "endTimeUnix", "type": "i64" },
+                    { "name": "reservePriceMkn", "type": "u64" },
+                    { "name": "minIncrementMkn", "type": "u64" },
+                    { "name": "antiSnipeWindowSecs", "type": "i64" },
+                    { "name": "highestBidder", "type": { "option": "pubkey" } },
+                    { "name": "highestBidMkn", "type": "u64" },
+                    { "name": "bump", "type": "u8" }
+                ]
+            }
         }
     ]
 };
@@ -74,10 +109,11 @@ export function useAuction() {
     }, [connection, wallet]);
 
     const createAuction = async (
+        merchant: PublicKey,
         startTimeUnix: number,
         endTimeUnix: number,
-        reservePriceLamports: number,
-        minIncrementLamports: number,
+        reservePriceMkn: number,
+        minIncrementMkn: number,
         antiSnipeWindowSecs: number
     ) => {
         const program = getProgram();
@@ -88,27 +124,38 @@ export function useAuction() {
 
         try {
             setLoading(true);
-            const auctionKeypair = web3.Keypair.generate();
+            const [auctionPda] = PublicKey.findProgramAddressSync(
+                [Buffer.from("auction"), merchant.toBuffer()],
+                program.programId
+            );
+
+            const [auctionVault] = PublicKey.findProgramAddressSync(
+                [Buffer.from("auction_vault"), auctionPda.toBuffer()],
+                program.programId
+            );
 
             const tx = await program.methods
                 .createAuction(
                     new BN(startTimeUnix),
                     new BN(endTimeUnix),
-                    new BN(reservePriceLamports),
-                    new BN(minIncrementLamports),
+                    new BN(reservePriceMkn),
+                    new BN(minIncrementMkn),
                     new BN(antiSnipeWindowSecs)
                 )
                 .accounts({
                     payer: wallet.publicKey,
-                    systemProgram: web3.SystemProgram.programId,
-                    auction: auctionKeypair.publicKey,
-                    merchant: wallet.publicKey,
+                    mknMint: MKN_TOKEN_MINT,
+                    auction: auctionPda,
+                    auctionVault: auctionVault,
+                    merchant: merchant,
+                    systemProgram: SystemProgram.programId,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    rent: SYSVAR_RENT_PUBKEY,
                 })
-                .signers([auctionKeypair])
                 .rpc();
 
             toast.success("Auction created successfully!");
-            return auctionKeypair.publicKey;
+            return auctionPda;
         } catch (error) {
             console.error("Create Auction Error:", error);
             toast.error("Failed to create auction");
@@ -117,41 +164,36 @@ export function useAuction() {
         }
     };
 
-    const placeBid = async (auctionPubkey: PublicKey, amountLamports: number, previousBidder: PublicKey | null) => {
+    const placeBid = async (auctionPubkey: PublicKey, amountMkn: number) => {
         const program = getProgram();
         if (!program || !wallet) return;
 
         try {
             setLoading(true);
-            // If no IDL method, we might need a fetch to confirm accounts but let's assume UI passes correctly
-            // previousBidder is actually stored in account, but if null we pass same auction address or system program as dummy?
-            // In Anchor, if an account is optional (Option<Account>), we pass null. 
-            // But my PlaceBid struct defined `previous_bidder` as `UncheckedAccount`. 
-            // It MUST be the correct account or a dummy if none?
-            // Wait, in my contract logic:
-            // if let Some(prev) = auction.highest_bidder { transfer to prev }
-            // The `previous_bidder` account passed in ctx must match.
-            // If `highest_bidder` is None, this account is likely ignored, BUT Anchor checks `to_account_info`.
-            // I should fetch the auction account first to see who current bidder is.
+            const auctionAccount = await program.account.auction.fetch(auctionPubkey) as any;
+            const currentHighestBidder = auctionAccount.highestBidder;
 
-            // Let's rely on helper to fetch state
-            const auctionAccount = await program.account.auction.fetch(auctionPubkey);
-            // @ts-ignore
-            const currentHighest = auctionAccount.highestBidder as PublicKey;
+            const [auctionVault] = PublicKey.findProgramAddressSync(
+                [Buffer.from("auction_vault"), auctionPubkey.toBuffer()],
+                program.programId
+            );
 
-            // If currentHighest is null (all zeros or null), we pass a placeholder (e.g. system program or self)
-            // Actually, if it's None, the logic inside checking for Some(prev) won't run.
-            // But we still need to pass A valid account for the instruction context.
-            // Usually passing SystemProgram is safe for "None".
-            const prevBidderKey = currentHighest || web3.SystemProgram.programId;
+            const bidderTokenAccount = await getAssociatedTokenAddress(MKN_TOKEN_MINT, wallet.publicKey);
+
+            let previousBidderTokenAccount = bidderTokenAccount; // Dummy
+            if (currentHighestBidder) {
+                previousBidderTokenAccount = await getAssociatedTokenAddress(MKN_TOKEN_MINT, currentHighestBidder);
+            }
 
             const tx = await program.methods
-                .placeBid(new BN(amountLamports))
+                .placeBid(new BN(amountMkn))
                 .accounts({
                     bidder: wallet.publicKey,
                     auction: auctionPubkey,
-                    previousBidder: prevBidderKey, // Critical: Must match on-chain state if exists
-                    systemProgram: web3.SystemProgram.programId,
+                    auctionVault: auctionVault,
+                    bidderTokenAccount: bidderTokenAccount,
+                    previousBidderTokenAccount: previousBidderTokenAccount,
+                    tokenProgram: TOKEN_PROGRAM_ID,
                 })
                 .rpc();
 
@@ -171,17 +213,27 @@ export function useAuction() {
 
         try {
             setLoading(true);
+            const [auctionVault] = PublicKey.findProgramAddressSync(
+                [Buffer.from("auction_vault"), auctionPubkey.toBuffer()],
+                program.programId
+            );
+
+            const merchantTokenAccount = await getAssociatedTokenAddress(MKN_TOKEN_MINT, merchant);
+
             const tx = await program.methods
                 .settle()
                 .accounts({
                     authority: wallet.publicKey,
                     auction: auctionPubkey,
+                    auctionVault: auctionVault,
+                    merchantTokenAccount: merchantTokenAccount,
                     merchantRecipient: merchant,
-                    systemProgram: web3.SystemProgram.programId
+                    tokenProgram: TOKEN_PROGRAM_ID
                 })
                 .rpc();
 
             toast.success("Auction settled!");
+            return tx;
         } catch (e) {
             console.error(e);
             toast.error("Failed to settle");

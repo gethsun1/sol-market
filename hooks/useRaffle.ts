@@ -2,9 +2,13 @@
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import { useState, useCallback } from "react";
 import { Program, Idl, AnchorProvider, BN, web3 } from "@coral-xyz/anchor";
-import { PublicKey } from "@solana/web3.js";
-import { RAFFLE_PROGRAM_ID } from "@/lib/constants";
+import { PublicKey, SYSVAR_RENT_PUBKEY, SystemProgram } from "@solana/web3.js";
+import { RAFFLE_PROGRAM_ID, MKN_TOKEN_MINT } from "@/lib/constants";
 import { toast } from "sonner";
+import {
+    TOKEN_PROGRAM_ID,
+    getAssociatedTokenAddress
+} from "@solana/spl-token";
 
 const IDL: Idl = {
     "version": "0.1.0",
@@ -13,45 +17,83 @@ const IDL: Idl = {
         {
             "name": "initializeRaffle",
             "accounts": [
-                { "name": "payer", "isMut": true, "isSigner": true },
-                { "name": "systemProgram", "isMut": false, "isSigner": false },
-                { "name": "raffle", "isMut": true, "isSigner": true },
-                { "name": "merchant", "isMut": false, "isSigner": false }
+                { "name": "payer", "writable": true, "signer": true },
+                { "name": "mknMint", "writable": false, "signer": false },
+                { "name": "raffle", "writable": true, "signer": false },
+                { "name": "raffleVault", "writable": true, "signer": false },
+                { "name": "merchant", "writable": false, "signer": false },
+                { "name": "systemProgram", "writable": false, "signer": false },
+                { "name": "tokenProgram", "writable": false, "signer": false },
+                { "name": "rent", "writable": false, "signer": false }
             ],
             "args": [
                 { "name": "category", "type": "u8" },
                 { "name": "endTimeUnix", "type": "i64" },
-                { "name": "ticketPriceLamports", "type": "u64" }
+                { "name": "ticketPriceMkn", "type": "u64" }
             ]
         },
         {
             "name": "buyTicket",
             "accounts": [
-                { "name": "buyer", "isMut": true, "isSigner": true },
-                { "name": "systemProgram", "isMut": false, "isSigner": false },
-                { "name": "raffle", "isMut": true, "isSigner": false },
-                { "name": "ticket", "isMut": true, "isSigner": true }
+                { "name": "buyer", "writable": true, "signer": true },
+                { "name": "raffle", "writable": true, "signer": false },
+                { "name": "raffleVault", "writable": true, "signer": false },
+                { "name": "buyerTokenAccount", "writable": true, "signer": false },
+                { "name": "ticket", "writable": true, "signer": false },
+                { "name": "systemProgram", "writable": false, "signer": false },
+                { "name": "tokenProgram", "writable": false, "signer": false }
             ],
             "args": []
         },
         {
             "name": "pickWinner",
             "accounts": [
-                { "name": "authority", "isMut": true, "isSigner": true },
-                { "name": "raffle", "isMut": true, "isSigner": false }
+                { "name": "authority", "writable": true, "signer": true },
+                { "name": "raffle", "writable": true, "signer": false }
             ],
             "args": []
         },
         {
             "name": "claimPrize",
             "accounts": [
-                { "name": "winner", "isMut": true, "isSigner": true },
-                { "name": "systemProgram", "isMut": false, "isSigner": false },
-                { "name": "raffle", "isMut": true, "isSigner": false },
-                { "name": "ticket", "isMut": true, "isSigner": false },
-                { "name": "merchant", "isMut": true, "isSigner": false }
+                { "name": "winner", "writable": true, "signer": true },
+                { "name": "raffle", "writable": true, "signer": false },
+                { "name": "raffleVault", "writable": true, "signer": false },
+                { "name": "merchantTokenAccount", "writable": true, "signer": false },
+                { "name": "ticket", "writable": true, "signer": false },
+                { "name": "tokenProgram", "writable": false, "signer": false }
             ],
             "args": []
+        }
+    ],
+    "accounts": [
+        {
+            "name": "Raffle",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "merchant", "type": "pubkey" },
+                    { "name": "mknMint", "type": "pubkey" },
+                    { "name": "category", "type": "u8" },
+                    { "name": "endTimeUnix", "type": "i64" },
+                    { "name": "ticketPriceMkn", "type": "u64" },
+                    { "name": "ticketsSold", "type": "u64" },
+                    { "name": "winningTicketIndex", "type": { "option": "u64" } },
+                    { "name": "bump", "type": "u8" }
+                ]
+            }
+        },
+        {
+            "name": "Ticket",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "raffle", "type": "pubkey" },
+                    { "name": "owner", "type": "pubkey" },
+                    { "name": "index", "type": "u64" },
+                    { "name": "bump", "type": "u8" }
+                ]
+            }
         }
     ]
 };
@@ -67,27 +109,38 @@ export function useRaffle() {
         return new Program(IDL, RAFFLE_PROGRAM_ID, provider);
     }, [connection, wallet]);
 
-    const initializeRaffle = async (category: number, endTimeUnix: number, ticketPrice: number) => {
+    const initializeRaffle = async (merchant: PublicKey, category: number, endTimeUnix: number, ticketPriceMkn: number) => {
         const program = getProgram();
         if (!program || !wallet) return;
 
         try {
             setLoading(true);
-            const raffleKeypair = web3.Keypair.generate();
+            const [rafflePda] = PublicKey.findProgramAddressSync(
+                [Buffer.from("raffle"), merchant.toBuffer()],
+                program.programId
+            );
+
+            const [raffleVault] = PublicKey.findProgramAddressSync(
+                [Buffer.from("raffle_vault"), rafflePda.toBuffer()],
+                program.programId
+            );
 
             await program.methods
-                .initializeRaffle(category, new BN(endTimeUnix), new BN(ticketPrice))
+                .initializeRaffle(category, new BN(endTimeUnix), new BN(ticketPriceMkn))
                 .accounts({
                     payer: wallet.publicKey,
-                    raffle: raffleKeypair.publicKey,
-                    merchant: wallet.publicKey,
-                    systemProgram: web3.SystemProgram.programId
+                    mknMint: MKN_TOKEN_MINT,
+                    raffle: rafflePda,
+                    raffleVault: raffleVault,
+                    merchant: merchant,
+                    systemProgram: SystemProgram.programId,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    rent: SYSVAR_RENT_PUBKEY
                 })
-                .signers([raffleKeypair])
                 .rpc();
 
             toast.success("Raffle created!");
-            return raffleKeypair.publicKey;
+            return rafflePda;
         } catch (e) {
             console.error(e);
             toast.error("Failed to create raffle");
@@ -102,12 +155,14 @@ export function useRaffle() {
 
         try {
             setLoading(true);
-            // We need to fetch raffle state to get tickets_sold for ticket PDA seeds
-            const raffleAccount = await program.account.raffle.fetch(rafflePubkey);
-            // @ts-ignore
+            const raffleAccount = await program.account.raffle.fetch(rafflePubkey) as any;
             const ticketsSold = raffleAccount.ticketsSold as BN;
 
-            // Derive Ticket PDA: [b"ticket", raffle, tickets_sold]
+            const [raffleVault] = PublicKey.findProgramAddressSync(
+                [Buffer.from("raffle_vault"), rafflePubkey.toBuffer()],
+                program.programId
+            );
+
             const [ticketPda] = PublicKey.findProgramAddressSync(
                 [
                     Buffer.from("ticket"),
@@ -117,32 +172,18 @@ export function useRaffle() {
                 program.programId
             );
 
-            // Wait, my instruction expects "init" which often requires SystemProgram. 
-            // But if I use findProgramAddress, it is NOT a Keypair signer, it is a PDA.
-            // My struct used: seeds = [...], bump, init, payer = buyer.
-            // So I pass the PDA address as 'ticket'. I DO NOT sign with it.
-            // BUT my IDL definition and logic in previous step for `buyTicket` says:
-            // `pub ticket: Account<'info, Ticket>` -> implies it's just an account.
-            // Ah, looking at `raffle/lib.rs` (Step 164 output):
-            // `pub ticket: Account<'info, Ticket>` with `blocks` like `init`, `seeds`.
-            // This means it IS a PDA. It does not need to be a signer (bump is used).
-
-            // Correction in IDL in this file: 
-            // { "name": "ticket", "isMut": true, "isSigner": true } -> should be false for PDA initialization via seeds.
-            // However, if I made a mistake in IDL here, generic constraint might fail.
-            // Let's assume isSigner: false for PDA.
-
-            // Wait, did I define it as signer in `lib.rs`? 
-            // `init` with `seeds` means PDA. PDA cannot sign (except via invoke_signed).
-            // The *client* does not sign for the PDA.
+            const buyerTokenAccount = await getAssociatedTokenAddress(MKN_TOKEN_MINT, wallet.publicKey);
 
             await program.methods
                 .buyTicket()
                 .accounts({
                     buyer: wallet.publicKey,
                     raffle: rafflePubkey,
+                    raffleVault: raffleVault,
+                    buyerTokenAccount: buyerTokenAccount,
                     ticket: ticketPda,
-                    systemProgram: web3.SystemProgram.programId
+                    systemProgram: SystemProgram.programId,
+                    tokenProgram: TOKEN_PROGRAM_ID
                 })
                 .rpc();
 
@@ -176,10 +217,43 @@ export function useRaffle() {
         }
     }
 
+    const claimPrize = async (rafflePubkey: PublicKey, ticketPda: PublicKey, merchant: PublicKey) => {
+        const program = getProgram();
+        if (!program || !wallet) return;
+
+        try {
+            setLoading(true);
+            const [raffleVault] = PublicKey.findProgramAddressSync(
+                [Buffer.from("raffle_vault"), rafflePubkey.toBuffer()],
+                program.programId
+            );
+
+            const merchantTokenAccount = await getAssociatedTokenAddress(MKN_TOKEN_MINT, merchant);
+
+            await program.methods.claimPrize()
+                .accounts({
+                    winner: wallet.publicKey,
+                    raffle: rafflePubkey,
+                    raffleVault: raffleVault,
+                    merchantTokenAccount: merchantTokenAccount,
+                    ticket: ticketPda,
+                    tokenProgram: TOKEN_PROGRAM_ID
+                })
+                .rpc();
+            toast.success("Prize claimed!");
+        } catch (e) {
+            console.error(e);
+            toast.error("Failed to claim prize");
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return {
         initializeRaffle,
         buyTicket,
         pickWinner,
+        claimPrize,
         loading
     }
 }

@@ -429,6 +429,7 @@ name = "auction"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "anchor-spl",
  "borsh 1.5.1",
  "indexmap",
  "toml_datetime",
@@ -1581,6 +1582,7 @@ name = "raffle"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "anchor-spl",
  "borsh 1.5.1",
  "indexmap",
  "toml_datetime",
@@ -2389,6 +2391,19 @@ name = "subtle"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
+
+[[package]]
+name = "swap"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "borsh 1.5.1",
+ "indexmap",
+ "toml_datetime",
+ "toml_edit 0.22.1",
+ "toml_parser",
+]
 
 [[package]]
 name = "syn"

@@ -9,6 +9,7 @@ skip-lint = false
 auction = "HJdFhhRi3Z3ipPjjbeoXu8x5nBHj7rTaU8D499gLWqqL"
 escrow = "33umURgaFrrQvJ8K7XrFXfVyUZsp3amfRBqyuEvPP5Wu"
 raffle = "AtbQBffhFkabRYCSTSa8BEjrCcV6tnD2AhJoNWSuBUvq"
+swap = "BLyc8iNGvz1mYRWGZdRku1fAQdhKLpMatX4DKf2FREPt"
 
 [registry]
 url = "https://api.apr.dev"

@@ -180,7 +180,7 @@ export default function AuctionsPage() {
             <div>
               <div className="text-sm text-foreground/60 mb-1">Total Value</div>
               <div className="text-2xl font-bold text-cyan-400">
-                {auctions.reduce((sum, a) => sum + a.currentPrice, 0).toFixed(2)} SOL
+                {auctions.reduce((sum, a) => sum + a.currentPrice, 0).toFixed(2)} MKN
               </div>
             </div>
             <div>
@@ -199,8 +199,8 @@ export default function AuctionsPage() {
                 key={option}
                 onClick={() => setSortBy(option)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${sortBy === option
-                    ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
-                    : "border border-foreground/20 text-foreground/70 hover:border-foreground/40"
+                  ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
+                  : "border border-foreground/20 text-foreground/70 hover:border-foreground/40"
                   }`}
               >
                 {option.charAt(0).toUpperCase() + option.slice(1)} {option === "highest" ? "Price" : ""}
@@ -250,11 +250,11 @@ export default function AuctionsPage() {
                     <div className="flex items-end justify-between mb-2">
                       <div>
                         <div className="text-xs text-foreground/60 mb-1">Current Bid</div>
-                        <div className="text-2xl font-bold text-cyan-400">{auction.currentPrice.toFixed(2)} SOL</div>
+                        <div className="text-2xl font-bold text-cyan-400">{auction.currentPrice.toFixed(2)} MKN</div>
                       </div>
                       <div className="text-right">
                         <div className="text-xs text-foreground/60 mb-1">Starting</div>
-                        <div className="text-sm text-foreground/70">{auction.startingPrice} SOL</div>
+                        <div className="text-sm text-foreground/70">{auction.startingPrice} MKN</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-green-400">
@@ -287,8 +287,8 @@ export default function AuctionsPage() {
                         toggleLike(auction.id)
                       }}
                       className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all ${auction.liked
-                          ? "bg-pink-500/20 text-pink-400 hover:bg-pink-500/30"
-                          : "bg-foreground/10 text-foreground/70 hover:bg-foreground/20"
+                        ? "bg-pink-500/20 text-pink-400 hover:bg-pink-500/30"
+                        : "bg-foreground/10 text-foreground/70 hover:bg-foreground/20"
                         }`}
                     >
                       <Heart className="h-4 w-4" fill={auction.liked ? "currentColor" : "none"} />
@@ -358,7 +358,7 @@ export default function AuctionsPage() {
                   <div className="rounded-lg border border-foreground/10 bg-foreground/5 p-4">
                     <div className="text-sm text-foreground/60 mb-1">Current Bid</div>
                     <div className="text-3xl font-bold text-cyan-400 mb-2">
-                      {selectedAuction.currentPrice.toFixed(2)} SOL
+                      {selectedAuction.currentPrice.toFixed(2)} MKN
                     </div>
                     <div className="text-sm text-foreground/70 mb-4">{selectedAuction.bidsCount} bids placed</div>
                     <Button className="w-full bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600">

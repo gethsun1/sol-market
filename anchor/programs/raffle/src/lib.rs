@@ -1,7 +1,6 @@
 #![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
-use anchor_lang::system_program;
-use anchor_lang::Discriminator;
+use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
 declare_id!("AtbQBffhFkabRYCSTSa8BEjrCcV6tnD2AhJoNWSuBUvq");
 
@@ -13,13 +12,14 @@ pub mod raffle {
         ctx: Context<InitializeRaffle>,
         category: u8,
         end_time_unix: i64,
-        ticket_price_lamports: u64,
+        ticket_price_mkn: u64,
     ) -> Result<()> {
         let raffle = &mut ctx.accounts.raffle;
         raffle.merchant = ctx.accounts.merchant.key();
+        raffle.mkn_mint = ctx.accounts.mkn_mint.key();
         raffle.category = category;
         raffle.end_time_unix = end_time_unix;
-        raffle.ticket_price_lamports = ticket_price_lamports;
+        raffle.ticket_price_mkn = ticket_price_mkn;
         raffle.tickets_sold = 0;
         raffle.winning_ticket_index = None;
         raffle.bump = ctx.bumps.raffle;
@@ -33,24 +33,26 @@ pub mod raffle {
         require!(now < raffle.end_time_unix, RaffleError::RaffleEnded);
         require!(raffle.winning_ticket_index.is_none(), RaffleError::WinnerAlreadySelected);
         
-        let ticket_price = raffle.ticket_price_lamports;
+        let ticket_price = raffle.ticket_price_mkn;
 
-        // Transfer SOL to Raffle PDA
-        let cpi_accounts = system_program::Transfer {
-            from: ctx.accounts.buyer.to_account_info(),
-            to: raffle.to_account_info(),
+        // 1. Transfer MKN to Raffle Vault
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.buyer_token_account.to_account_info(),
+            to: ctx.accounts.raffle_vault.to_account_info(),
+            authority: ctx.accounts.buyer.to_account_info(),
         };
-        let cpi_ctx = CpiContext::new(ctx.accounts.system_program.to_account_info(), cpi_accounts);
-        system_program::transfer(cpi_ctx, ticket_price)?;
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        token::transfer(cpi_ctx, ticket_price)?;
 
-        // Init Ticket
+        // 2. Init Ticket
         let ticket = &mut ctx.accounts.ticket;
         ticket.raffle = raffle.key();
         ticket.owner = ctx.accounts.buyer.key();
         ticket.index = raffle.tickets_sold;
         ticket.bump = ctx.bumps.ticket;
 
-        // Increment count
+        // 3. Increment count
         raffle.tickets_sold = raffle.tickets_sold.checked_add(1).unwrap();
 
         Ok(())
@@ -64,8 +66,6 @@ pub mod raffle {
         require!(raffle.tickets_sold > 0, RaffleError::NoTicketsSold);
         require!(raffle.winning_ticket_index.is_none(), RaffleError::WinnerAlreadySelected);
 
-        // Simple Devnet Randomness: (Last Block Slot + Timestamp) % tickets_sold
-        // WARNING: Not secure for mainnet (validators can manipulate), but fine for devnet demo.
         let clock = Clock::get()?;
         let random_seed = clock.slot.wrapping_add(clock.unix_timestamp as u64);
         let winner_index = random_seed % raffle.tickets_sold;
@@ -83,48 +83,26 @@ pub mod raffle {
         require!(raffle.winning_ticket_index.unwrap() == ticket.index, RaffleError::NotTheWinner);
         require!(ticket.owner == ctx.accounts.winner.key(), RaffleError::Unauthorized);
 
-        // Payout to Winner (e.g. 50% pot) and Merchant (50% pot) or Winner Item / Merchant Pot
-        // Assuming this is a "Pot Raffle" (Funds go to winner/merchant split) or "Item Raffle" (Funds go to merchant, Item to Winner).
-        // Since the instruction is `distribute_prize` in original, let's assume Funds -> Merchant (Revenue) and simple completion.
-        // Wait, normally a raffle implies the USER wins something.
-        // If it's a "Cash Raffle", winner takes pot.
-        // If it's an "Item Raffle", Merchant takes cash, Winner takes Item.
-        // Given SolMarket context (Ecommerce), it's likely "Buy Ticket to win Item".
-        // So:
-        // 1. Funds (Ticket Sales) -> Merchant
-        // 2. Winner gets... the conceptual Item? Or maybe we refund the ticket price?
-        // Let's implement: Funds -> Merchant. Winner is marked. Off-chain delivery of item.
-        // OR: Winner takes pot (50/50).
-        // Let's go with: Merchant gets Ticket Sales. Winner is just recorded on-chain.
-        // This is simplest for "Item Raffle".
+        // Funds from ticket sales go to merchant
+        let amount = raffle.tickets_sold.checked_mul(raffle.ticket_price_mkn).unwrap();
         
-        let total_funds = raffle.to_account_info().lamports();
-        // Rent exempt reserve?
-        let rent = Rent::get()?.minimum_balance(raffle.to_account_info().data_len());
-        let payroll = total_funds.saturating_sub(rent);
-        
-        if payroll > 0 {
-             let seeds: [&[u8]; 3] = [
-                b"raffle",
+        if amount > 0 {
+             let seeds = &[
+                b"raffle".as_ref(),
                 raffle.merchant.as_ref(),
-                &[raffle.bump]
+                &[raffle.bump],
             ];
-            let signer_seeds = [&seeds[..]];
+            let signer = &[&seeds[..]];
 
-            let cpi_accounts = system_program::Transfer {
-                from: raffle.to_account_info(),
-                to: ctx.accounts.merchant.to_account_info(),
+            let cpi_accounts = Transfer {
+                from: ctx.accounts.raffle_vault.to_account_info(),
+                to: ctx.accounts.merchant_token_account.to_account_info(),
+                authority: raffle.to_account_info(),
             };
-            let cpi_ctx = CpiContext::new_with_signer(
-                ctx.accounts.system_program.to_account_info(),
-                cpi_accounts,
-                &signer_seeds
-            );
-            system_program::transfer(cpi_ctx, payroll)?;
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+            token::transfer(cpi_ctx, amount)?;
         }
-        
-        // We could close the raffle here? Or leave it for history.
-        // Let's close ticket account to reclaim rent for winner.
         
         Ok(())
     }
@@ -134,9 +112,10 @@ pub mod raffle {
 #[derive(InitSpace)]
 pub struct Raffle {
     pub merchant: Pubkey,
+    pub mkn_mint: Pubkey,
     pub category: u8,
     pub end_time_unix: i64,
-    pub ticket_price_lamports: u64,
+    pub ticket_price_mkn: u64,
     pub tickets_sold: u64,
     pub winning_ticket_index: Option<u64>,
     pub bump: u8,
@@ -155,40 +134,75 @@ pub struct Ticket {
 pub struct InitializeRaffle<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
+    
+    pub mkn_mint: Account<'info, Mint>,
+
     #[account(
         init,
         payer = payer,
-        space = Raffle::DISCRIMINATOR.len() + Raffle::INIT_SPACE,
+        space = 8 + Raffle::INIT_SPACE,
         seeds = [b"raffle", merchant.key().as_ref()],
         bump
     )]
     pub raffle: Account<'info, Raffle>,
+
+    #[account(
+        init,
+        payer = payer,
+        token::mint = mkn_mint,
+        token::authority = raffle,
+        seeds = [b"raffle_vault", raffle.key().as_ref()],
+        bump
+    )]
+    pub raffle_vault: Account<'info, TokenAccount>,
+
     /// CHECK: Merchant authority
     pub merchant: UncheckedAccount<'info>,
+    
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    pub rent: Sysvar<'info, Rent>,
 }
 
 #[derive(Accounts)]
 pub struct BuyTicket<'info> {
     #[account(mut)]
     pub buyer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-    #[account(mut, seeds = [b"raffle", raffle.merchant.as_ref()], bump = raffle.bump)]
+
+    #[account(
+        mut, 
+        seeds = [b"raffle", raffle.merchant.as_ref()], 
+        bump = raffle.bump
+    )]
     pub raffle: Account<'info, Raffle>,
+
+    #[account(
+        mut,
+        seeds = [b"raffle_vault", raffle.key().as_ref()],
+        bump
+    )]
+    pub raffle_vault: Account<'info, TokenAccount>,
+
+    #[account(mut)]
+    pub buyer_token_account: Account<'info, TokenAccount>,
+
     #[account(
         init,
         payer = buyer,
-        space = Ticket::DISCRIMINATOR.len() + Ticket::INIT_SPACE,
+        space = 8 + Ticket::INIT_SPACE,
         seeds = [b"ticket", raffle.key().as_ref(), &raffle.tickets_sold.to_le_bytes()],
         bump
     )]
     pub ticket: Account<'info, Ticket>,
+
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
 pub struct PickWinner<'info> {
     #[account(mut)]
-    pub authority: Signer<'info>, // Anybody can trigger pick winner to ensure fairness/liveness
+    pub authority: Signer<'info>,
     #[account(mut, seeds = [b"raffle", raffle.merchant.as_ref()], bump = raffle.bump)]
     pub raffle: Account<'info, Raffle>,
 }
@@ -197,19 +211,33 @@ pub struct PickWinner<'info> {
 pub struct ClaimPrize<'info> {
     #[account(mut)]
     pub winner: Signer<'info>,
-    pub system_program: Program<'info, System>,
-    #[account(mut, seeds = [b"raffle", raffle.merchant.as_ref()], bump = raffle.bump)]
-    pub raffle: Account<'info, Raffle>,
+
     #[account(
         mut, 
-        close = winner, // Close ticket and return rent to winner
+        seeds = [b"raffle", raffle.merchant.as_ref()], 
+        bump = raffle.bump
+    )]
+    pub raffle: Account<'info, Raffle>,
+
+    #[account(
+        mut,
+        seeds = [b"raffle_vault", raffle.key().as_ref()],
+        bump
+    )]
+    pub raffle_vault: Account<'info, TokenAccount>,
+
+    #[account(mut)]
+    pub merchant_token_account: Account<'info, TokenAccount>,
+
+    #[account(
+        mut, 
+        close = winner,
         seeds = [b"ticket", raffle.key().as_ref(), &ticket.index.to_le_bytes()],
         bump = ticket.bump
     )]
     pub ticket: Account<'info, Ticket>,
-    /// CHECK: Merchant recipient
-    #[account(mut, address = raffle.merchant)]
-    pub merchant: UncheckedAccount<'info>,
+
+    pub token_program: Program<'info, Token>,
 }
 
 #[error_code]
@@ -229,6 +257,3 @@ pub enum RaffleError {
     #[msg("Unauthorized")]
     Unauthorized,
 }
-
-
-

@@ -7,6 +7,7 @@ import { Gavel, MessageCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuction } from "@/hooks/useAuction"
 import { useRouter } from "next/navigation"
+import { useWallet } from "@solana/wallet-adapter-react"
 
 export default function CreateAuctionPage() {
   const router = useRouter()
@@ -50,13 +51,16 @@ export default function CreateAuctionPage() {
       return
     }
 
-    const startingPriceLamports = formData.startingPrice * 1e9 // SOL to Lamports
-    const minIncrement = startingPriceLamports * 0.05 // 5% increment default
+    const startingPriceUnits = formData.startingPrice * 1e6 // MKN Units (6 decimals)
+    const minIncrement = startingPriceUnits * 0.05 // 5% increment default
+
+    if (!wallet.publicKey) return;
 
     await createAuction(
+      wallet.publicKey,
       startUnix,
       endUnix,
-      startingPriceLamports,
+      startingPriceUnits,
       minIncrement,
       300 // 5 min anti-snipe
     )
@@ -145,14 +149,14 @@ export default function CreateAuctionPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2">Starting Price (SOL)</label>
+                <label className="block text-sm font-semibold mb-2">Starting Price (MKN)</label>
                 <input
                   type="number"
                   name="startingPrice"
                   value={formData.startingPrice}
                   onChange={handleInputChange}
-                  step="0.1"
-                  min="0.1"
+                  step="1"
+                  min="1"
                   className="w-full rounded-lg border border-foreground/20 bg-foreground/5 px-4 py-3 text-foreground focus:border-cyan-500 focus:outline-none"
                   required
                 />
@@ -219,16 +223,15 @@ export default function CreateAuctionPage() {
               />
             </div>
 
-            {/* Fee Info */}
             <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 p-4">
               <div className="text-sm text-foreground/70 mb-2">Auction Details</div>
               <div className="flex justify-between mb-2">
                 <span>Platform Fee (5%)</span>
-                <span className="font-semibold">{(formData.startingPrice * 0.05).toFixed(2)} SOL</span>
+                <span className="font-semibold">{(formData.startingPrice * 0.05).toFixed(2)} MKN</span>
               </div>
               <div className="border-t border-cyan-500/30 pt-2 flex justify-between">
                 <span className="font-semibold">You will receive (min)</span>
-                <span className="font-semibold text-cyan-400">{(formData.startingPrice * 0.95).toFixed(2)} SOL</span>
+                <span className="font-semibold text-cyan-400">{(formData.startingPrice * 0.95).toFixed(2)} MKN</span>
               </div>
             </div>
 

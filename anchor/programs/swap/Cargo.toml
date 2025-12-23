@@ -1,20 +1,20 @@
 [package]
-name = "auction"
+name = "swap"
 version = "0.1.0"
-description = "English auction program for SolMarket"
+description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "auction"
+name = "swap"
 
 [features]
-anchor-debug = []
-idl-build = []
+default = []
+cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
-test-sbf = []
+idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
 anchor-lang = "0.30.1"
@@ -24,9 +24,3 @@ toml_edit = "=0.22.1"
 toml_parser = "=1.0.1"
 toml_datetime = "=0.6.11"
 indexmap = "=2.0.0"
-
-
-
-
-
-
