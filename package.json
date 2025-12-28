@@ -16,7 +16,10 @@
     "seed:demo": "node scripts/seed-demo-data.js",
     "vercel:build": "next build",
     "vercel:deploy": "vercel --prod",
-    "setup:dev": "npm install && npm run seed:demo && npm run dev"
+    "setup:dev": "npm install && npm run seed:demo && npm run dev",
+    "migrate:build-frontend": "bash scripts/build-frontend.sh",
+    "migrate:test": "bash scripts/test-deployment.sh",
+    "migrate:help": "cat QUICK_START.md"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
@@ -66,6 +69,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
+    "dotenv": "^17.2.3",
     "embla-carousel-react": "8.5.1",
     "framer-motion": "^12.23.26",
     "geist": "latest",
@@ -94,6 +98,7 @@
     "archiver": "^7.0.1",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
